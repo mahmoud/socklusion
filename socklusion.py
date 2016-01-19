@@ -18,6 +18,7 @@ CUR_FILE = os.path.abspath(__file__)
 
 
 def parse_args():
+    # TODO: help strings
     prs = optparse.OptionParser()
     ao = prs.add_option
     ao('--host')
@@ -89,7 +90,10 @@ def send_data_surrogate(data, **kwargs):
     cmd = build_command(**new_kwargs)
 
     os.chdir('/')
-    os.setsid()
+    try:
+        os.setsid()
+    except AttributeError:
+        pass  # win32 has no terminal sessions
     os.umask(0)
 
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
@@ -108,7 +112,7 @@ def send_data(data, **kwargs):
     try:
         ret = _send_data_inner(data, **kwargs)
     except Exception:
-        # TODO
+        # TODO get all this stuff escaped correctly
         try:
             with open(exception_path, 'wb') as f:
                 f.write('traceback = """\\\n')
@@ -128,20 +132,13 @@ def send_data(data, **kwargs):
 
 
 def _daemonize_streams():
-    null_devs = ['/dev/null', '\Device\Null', 'nul']
-    for dev_null in null_devs:
-        if os.path.exists(dev_null):
-            break
-    else:
-        return  # no null device, strange but ok
-
-    stdin = open(dev_null, 'r')
+    stdin = open(os.devnull, 'r')
     os.dup2(stdin.fileno(), sys.stdin.fileno())
 
-    stdout = open(dev_null, 'a+')
+    stdout = open(os.devnull, 'a+')
     os.dup2(stdout.fileno(), sys.stdout.fileno())
 
-    stderr = open(dev_null, 'a+', 0)
+    stderr = open(os.devnull, 'a+', 0)
     os.dup2(stderr.fileno(), sys.stderr.fileno())
 
     return
