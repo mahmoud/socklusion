@@ -26,7 +26,7 @@ def parse_args():
     ao('--host')
     ao('--port', type=int)
     ao('--wrap-ssl', action='store_true')
-    ao('--message')
+    ao('--message')  # TODO: literal_eval style
     ao('--send-only', action='store_true')
     ao('--response-path')
     ao('--exception-path')
@@ -118,7 +118,6 @@ def send_data(data, **kwargs):
     try:
         ret = _send_data_inner(data, **kwargs)
     except Exception:
-        # TODO get all this stuff escaped correctly
         try:
             with open(exception_path, 'wb') as f:
                 f.write('traceback = """\\\n')
@@ -127,11 +126,10 @@ def send_data(data, **kwargs):
                 f.write('command = ')
                 f.write(repr(get_command_str()))
                 f.write('\n\n')
-                f.write('message = """\\\n')
-                f.write(data or '')
-                f.write('"""\n')
-
-        except:
+                f.write('message = ')
+                f.write(repr(data or ''))
+                f.write('\n')
+        except Exception:
             pass
         raise
     return ret
@@ -192,7 +190,7 @@ def _send_data_inner(data, host, port=None, wrap_ssl=None, send_only=None,
     response_file = None
     while 1:
         cur_time = time.time()
-        if time.time() > max_time:
+        if cur_time > max_time:
             raise RuntimeError('timed out after %r seconds'
                                % (cur_time - start_time))
         data = sock.recv(4096)
@@ -210,15 +208,16 @@ def _send_data_inner(data, host, port=None, wrap_ssl=None, send_only=None,
     return
 
 
-def get_input_message():
-    return sys.stdin.read()
-
-
 def main():
     opts, args = parse_args()
     kwargs = dict(opts)
 
-    message = kwargs.pop('message', '') or get_input_message()
+    message = kwargs.pop('message', None)
+    if message is not None:
+        message = message.decode('string_escape')
+    else:
+        message = sys.stdin.read()
+
     mode = kwargs['mode']
     if mode == 'parent':
         # start_time = time.time()
