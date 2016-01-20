@@ -9,6 +9,8 @@ import optparse
 import traceback
 import subprocess
 
+from pipes import quote as shell_quote
+
 
 DEFAULT_TIMEOUT = 60.0
 DEFAULT_SOCKET_TIMEOUT = 1.0
@@ -69,6 +71,10 @@ def build_command(host, port=None, wrap_ssl=None, timeout=None,
     return cmd_tokens
 
 
+def get_command_str():
+    return ' '.join([sys.executable] + [shell_quote(v) for v in sys.argv])
+
+
 def send_data_parent(data, **kwargs):
     # TODO: detect if win32. may not need surrogate in that case.
 
@@ -118,17 +124,23 @@ def send_data(data, **kwargs):
                 f.write('traceback = """\\\n')
                 f.write(traceback.format_exc())
                 f.write('"""\n')
-                f.write('command = """\\\n')
-                f.write(' '.join([sys.executable] + list(sys.argv)))
-                f.write('"""\n\n')
+                f.write('command = ')
+                f.write(repr(get_command_str()))
+                f.write('\n\n')
                 f.write('message = """\\\n')
                 f.write(data or '')
-                f.write('"""')
+                f.write('"""\n')
 
         except:
             pass
         raise
     return ret
+
+
+def tquote_repr(instr):
+    # lines = [r'"""\']
+    for line in instr.splitlines():
+        pass
 
 
 def _daemonize_streams():
@@ -173,6 +185,8 @@ def _send_data_inner(data, host, port=None, wrap_ssl=None, send_only=None,
     sock.connect((host, port))
     sock.sendall(data)
     if send_only:
+        sock.shutdown(socket.SHUT_WR)
+        sock.recv(1)  # wait for the empty read
         return
 
     response_file = None
