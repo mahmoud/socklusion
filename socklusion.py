@@ -32,7 +32,7 @@ there is an exception. See the command help and docstrings for more.
 """
 # TODO: retries?
 # TODO: Python 3 probably
-# TODO: should I be using close_fds?
+# TODO: use close_fds?
 
 import os
 import sys
@@ -195,7 +195,7 @@ def _daemonize_streams():
     stdout = open(os.devnull, 'a+')
     os.dup2(stdout.fileno(), sys.stdout.fileno())
 
-    stderr = open(os.devnull, 'a+', 0)
+    stderr = open(os.devnull, 'a+')
     os.dup2(stderr.fileno(), sys.stderr.fileno())
 
     return
