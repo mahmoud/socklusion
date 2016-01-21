@@ -266,9 +266,9 @@ def main():
 
     mode = kwargs.pop('mode')
     if mode == 'parent':
-        start_time = time.time()
+        # start_time = time.time()
         ret = send_data(message, **kwargs)
-        print round((time.time() - start_time) * 1000, 2), 'ms'
+        # print round((time.time() - start_time) * 1000, 2), 'ms'
     elif mode == 'surrogate':
         ret = send_data_surrogate(message, **kwargs)
     elif mode == 'child':
