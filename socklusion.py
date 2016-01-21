@@ -4,7 +4,7 @@ simple, isolated socket communication. No threads or dependencies
 beyond Python 2.6+. Worry-free, cross-platform, isolated, parallel
 message sending.
 
-Practically, socklusion (pronounced like "socklusion") is used to
+Practically, socklusion (pronounced like "seclusion") is used to
 "fire and forget" network messages. One such use case is the sending
 of analytics[1], as one might do from the browser. Specifically, the
 version/build of Python, PATH settings, and other environment
