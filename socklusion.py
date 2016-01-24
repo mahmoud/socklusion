@@ -192,10 +192,10 @@ def _daemonize_streams():
     stdin = open(os.devnull, 'r')
     os.dup2(stdin.fileno(), sys.stdin.fileno())
 
-    stdout = open(os.devnull, 'a+')
+    stdout = open(os.devnull, 'ab+')
     os.dup2(stdout.fileno(), sys.stdout.fileno())
 
-    stderr = open(os.devnull, 'a+')
+    stderr = open(os.devnull, 'ab+', 0)
     os.dup2(stderr.fileno(), sys.stderr.fileno())
 
     return
